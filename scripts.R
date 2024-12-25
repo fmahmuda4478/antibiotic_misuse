@@ -1,0 +1,73 @@
+library(tidyverse)
+library(readxl)
+install.packages("dplyr")
+library(dplyr)
+
+data<-read_excel("raw_data/AMR_KAP_Data.xlsx")
+
+sf28 <- data |>
+  select(12:39)
+
+colnames(sf28) <- paste0("Q",1:28)
+
+#antibiotic knowledge 
+antibiotic_knowledge <-sf28 |>
+  select(Q1:Q12) |>
+  mutate(across(Q1:Q12,~case_when(
+    . =="Don't Know"~0 ,
+    . =="Yes"~100 ,
+    . == "No" ~50,
+    TRUE~NA_real_
+))) |>
+rowwise() |>
+mutate(antibiotic_knowledge = mean (c_across(Q1:Q12),na.rm=TRUE))
+
+
+# attitude
+attitude<-sf28 |>
+  select(Q13:Q22) |>
+  mutate(across(Q13:Q22,~case_when(
+    . =="Neutral"~0 ,
+    . =="Agree"~100 ,
+    . == "Disagree" ~50,
+    TRUE~NA_real_
+  ))) |>
+  rowwise() |>
+  mutate( attitude= mean (c_across(Q13:Q22),na.rm=TRUE))
+
+
+
+# practice
+practice<-sf28 |>
+  select(Q23:Q28) |>
+  mutate(across(Q23:Q28,~case_when(
+    . =="Yes"~100 ,
+    . == "No" ~0,
+    TRUE~NA_real_
+  ))) |>
+  rowwise() |>
+  mutate( practice= mean (c_across(Q23:Q28),na.rm=TRUE))
+
+#Combined data
+demographics <- data |>
+  select(1:11)
+
+sources_of_information<- data |>
+  select(41:49) 
+
+sf_domains <- cbind(demographics,antibiotic_knowledge,attitude,practice,sources_of_information)
+sf_domains <-sf_domains |>
+  select(antibiotic_knowledge,attitude,practice)
+
+kap_data<-cbind(demographics,sf_domains,sources_of_information)
+ 
+#export data
+write.csv(kap_data,"clean_data/kap_clean.csv",row.names=FALSE)
+
+
+
+
+
+
+
+
