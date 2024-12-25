@@ -18,9 +18,9 @@ antibiotic_knowledge <-sf28 |>
     . =="Yes"~100 ,
     . == "No" ~50,
     TRUE~NA_real_
-))) |>
-rowwise() |>
-mutate(antibiotic_knowledge = mean (c_across(Q1:Q12),na.rm=TRUE))
+  ))) |>
+  rowwise() |>
+  mutate(antibiotic_knowledge = mean (c_across(Q1:Q12),na.rm=TRUE))
 
 
 # attitude
@@ -60,14 +60,32 @@ sf_domains <-sf_domains |>
   select(antibiotic_knowledge,attitude,practice)
 
 kap_data<-cbind(demographics,sf_domains,sources_of_information)
- 
+
 #export data
 write.csv(kap_data,"clean_data/kap_clean.csv",row.names=FALSE)
 
 
 
+#load package
+library(tidyverse)
+library(gtsummary)
+library(gt)
+
+library(xlsx)
+
+#load data
+data <- read.csv("clean_data/kap_clean.csv")
 
 
+write.xlsx(kap_data,"clean_data/kap_clean.xlsx",row.names=FALSE)
 
+data <- readxl::read_excel("clean_data/kap_clean.xlsx")
+)
+#table 1: Demographic characteristics of study participants
+data |>
+  select(1:11)|>
+   tbl_summary()|>
+  as_gt()|>
+  gtsave("tables/Table1.docx")
 
 
